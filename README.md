@@ -1,6 +1,6 @@
 # Online Retail II — Advanced Analytics (Part 2)
 
-Extension of the cancellation-loss investigation into predictive territory: K-Means customer segmentation across RFMR dimensions, Prophet-based gross sales and cluster-level cancellation forecasting, and XGBoost vs Random Forest cancellation prediction — translating behavioral clusters into targeted account priorities, monthly operational planning, and a forward-looking risk ranking of the UK customer base.
+This project extends the cancellation-loss investigation (Part 1 in the project's footnote) into predictive analysis. It applies K-Means segmentation across RFMR dimensions, uses Prophet for gross sales and cluster-level cancellation forecasting, and compares XGBoost with Random Forest for cancellation prediction. These methods translate behavioral clusters into targeted account priorities, inform monthly operational planning, and provide a forward-looking risk ranking for the UK customer base.
 
 ---
 
@@ -57,29 +57,29 @@ Same source as Part 1 — Online Retail II (UCI Machine Learning Repository).
 
 ## Key Design Decisions
 
-**RobustScaler over StandardScaler.** K-Means clustering used RobustScaler (median and IQR) instead of StandardScaler (mean and std) to prevent extreme outliers — particularly Customer 12346's £77k bulk cancellation — from distorting the feature space and pulling clusters toward the outlier.
+**RobustScaler was chosen over StandardScaler for K-Means clustering.** Using the median and IQR instead of the mean and standard deviation to prevent extreme outliers, such as Customer 12346's £77k bulk cancellation, from distorting the feature space and skewing cluster assignments.
 
-**Customer 12346 isolated before clustering.** This customer's single 74,215-unit bulk cancellation in January 2011 represents a one-off B2B event, not a behavioral pattern. Including it in clustering would create a segment of one and distort the remaining 2,291 accounts. It was isolated, labeled "The Event," and added back to the summary after clustering.
+**Customer 12346 was isolated before clustering.** This customer's single 74,215-unit bulk cancellation in January 2011 was a unique B2B event, not a recurring behavioral pattern. Including this account would have created a segment of one and distorted the analysis of the remaining 2,291 accounts. The account was labeled "The Event" and included in the summary after clustering.
 
-**K=3 over K=2 for both markets.** Silhouette scoring peaked at K=2 for both UK and Germany, but K=3 was selected because it produced meaningfully distinct behavioral segments rather than a binary split. The third cluster in each market identified a structurally different group — Question Mark in the UK, One-and-Gone in Germany — that carries separate business implications.
+**K=3 was selected over K=2 for both markets.** Although silhouette scoring peaked at K=2 for the UK and Germany, K=3 produced more distinct behavioral segments. The third cluster in each market identified a structurally different group: Question Mark in the UK and One-and-Gone in Germany. Each carries separate business implications.
 
-**Prophet over ARIMA for forecasting.** ARIMA outperformed Prophet on test-set accuracy (MAE £62,590 vs £368,160), but its six-month forecast was completely flat at £695k every month. A flat forecast provides no basis for planning. Prophet's monthly variation — ranging from £319k in May to £835k in March — is what makes resource allocation decisions possible.
+**Prophet was chosen over ARIMA for forecasting.** While ARIMA achieved better test-set accuracy (MAE £62,590 vs £368,160), its six-month forecast was flat at £695k per month, offering no actionable insights. Prophet's monthly variation, ranging from £319k in May to £835k in March, enables effective resource allocation decisions.
 
-**Log transform on ML target.** The cancellation loss distribution is highly right-skewed, with most customers canceling small amounts and a few canceling very large ones. Applying log(y + 1) before training and exponentiating predictions back improved model stability and reduced the influence of extreme values on the loss function.
+**A log transformation was applied to the machine learning target.** The cancellation loss distribution is highly right-skewed, with most customers canceling small amounts and a few canceling very large amounts. Applying log(y + 1) before training and exponentiating predictions improved model stability and reduced the impact of extreme values on the loss function.
 
-**Year 1 features → Year 2 target.** The ML model is trained on behavioral features from Year 1 (Dec 2009 – Nov 2010) to predict Year 2 (Dec 2010 – Nov 2011) cancellation loss — a genuine out-of-sample setup that avoids data leakage and reflects how the model would be deployed in practice.
+**Year 1 features were used to predict Year 2 targets.** The machine learning model was trained on behavioral features from Year 1 (Dec 2009 to Nov 2010) to predict cancellation loss in Year 2 (Dec 2010 to Nov 2011). This out-of-sample approach avoids data leakage and reflects real-world deployment.
 
 ---
 
 ## Key Findings
 
-**Segmentation — Cancellation risk is behavioral, not random.** Three distinct customer profiles emerged in both markets. In the UK, 24 Stars accounts generate £2.01M in gross sales with only a 7.4% return rate but represent the highest relationship risk. Eight Question Mark accounts carried a 44.9% return rate before disengaging entirely. In Germany, five Recents Risky accounts are actively buying and canceling simultaneously — the most urgent intervention target.
+**Segmentation shows that cancellation risk is behavioral, not random.** Three distinct customer profiles emerged in both markets. In the UK, 24 Stars accounts generated £2.01M in gross sales with a 7.4% return rate but represent the highest relationship risk. Eight Question Mark accounts had a 44.9% return rate before disengaging entirely. In Germany, five Recents Risky accounts are actively buying and canceling at the same time, making them the most urgent intervention target.
 
-**Forecasting — June is the critical month.** The projected cancellation rate reaches 10% in June 2012, nearly double the historical two-year average. Question Mark accounts are responsible for 57% of June's expected losses. May and January are secondary peaks. February and March offer a low-risk window for operational drawdown and preparation.
+**Forecasting identifies June as the critical month.** The projected cancellation rate reaches 10% in June 2012, nearly double the historical average of 16.9% at the invoice level. Question Mark accounts are responsible for 57% of June's expected losses. May and January are secondary peaks. February and March provide a low-risk window for operational drawdown and preparation.
 
-**Prediction — Cluster behavior and spend drive cancellation risk.** XGBoost ranked cluster membership as the top predictive feature (46% importance), with gross purchases second (15%). Together, they confirm that who a customer is behaviorally — not just how much they spend — is the strongest signal for future cancellation. Four Stars accounts (Customers 16013, 15311, 17450, 12748) carry the highest combined risk scores entering 2012.
+**Prediction results show that cluster behavior and spend drive cancellation risk.** XGBoost ranked cluster membership as the top predictive feature (46% importance), with gross purchases second (15%). This confirms that behavioral characteristics, not just spending levels, are the strongest indicators of future cancellation. Four Stars accounts (Customers 16013, 15311, 17450, 12748) have the highest combined risk scores entering 2012.
 
-**Anonymous transactions are a structural blind spot.** £383k in cancellations across the two-year period carry no Customer ID. These cannot be clustered, forecasted at the account level, or managed proactively. In January 2012 alone, anonymous transactions are expected to account for 59% of projected losses.
+**Anonymous transactions are a structural blind spot.** £383k in cancellations across the two-year period carry no Customer ID. We can't cluster them, forecast them at the account level, or manage them proactively. In January 2012 alone, anonymous transactions are expected to account for 59% of projected losses.
 
 ---
 
@@ -87,25 +87,25 @@ Same source as Part 1 — Online Retail II (UCI Machine Learning Repository).
 
 ### Segmentation
 
-**Stars (UK) and Recents Risky (Germany) — assign one-on-one account management.** These are the highest-value, most active accounts in each market. Their cancellations reflect friction in an ongoing relationship, not disengagement. Dedicate a single point of contact to each account and provide real-time inventory visibility before orders are placed to remove a common B2B cancellation trigger.
+**Stars (UK) and Recents Risky (Germany):** assign one-on-one account management. These are the highest-value, most active accounts in each market. Their cancellations reflect friction in ongoing relationships rather than disengagement. Assign a single point of contact to each account and provide real-time inventory visibility before orders are placed to reduce B2B cancellation triggers.
 
-**Normal Bypass (UK) and Regulars (Germany) — apply a single blanket order policy.** These customers canceled at some point but continued purchasing. Individual management is not warranted. Require order confirmation within 48 hours for orders above £500 or 50+ units, and mandatory confirmation at checkout for customers with fewer than three prior invoices.
+**Normal Bypass (UK) and Regulars (Germany):** apply a single blanket order policy. These customers canceled at some point but continued purchasing, so individual management is not necessary. Require order confirmation within 48 hours for orders above £500 or 50 units, and mandate confirmation at checkout for customers with fewer than three prior invoices.
 
-**Question Mark (UK) — conduct individual account review.** Eight accounts with £441k in gross sales and a 44.9% return rate stopped all activity simultaneously. Pull order history and communication records for each, assess whether the cancellation caused the exit or followed it, and make a recovery decision per account.
+**Question Mark (UK):** conduct individual account reviews. Eight accounts with £441k in gross sales and a 44.9% return rate stopped all activity at the same time. Review order history and communication records for each account, determine whether the cancellation caused the exit or followed it, and decide on recovery actions individually.
 
 ### Forecasting
 
-**Pre-emptive account engagement in May for June.** June carries the highest projected cancellation rate (10%) and volume (£57k). Engage Question Mark and Stars accounts one month in advance through direct outreach, commercial negotiation, or delivery guarantees before orders convert to cancellations.
+**Engage accounts pre-emptively in May for June.** June has the highest projected cancellation rate (10%) and volume (£57k). Reach out to Question Mark and Stars accounts one month in advance through direct communication, commercial negotiation, or delivery guarantees to prevent cancellations.
 
-**Maintain returns-processing capacity in January and May despite different triggers.** January's risk is driven by Anonymous transactions (59% of projected losses) — an operational problem, not an account one. May's risk is distributional, with no single cluster dominating. Both require staffing, not account management.
+**Maintain returns-processing capacity in January and May, despite different risk triggers.** January's risk is driven by Anonymous transactions (59% of projected losses), which is an operational issue rather than an account issue. May's risk is spread across clusters, with no single group dominating. Both months require increased staffing rather than account management.
 
-**Use February and March as the preparation window.** February has the lowest projected volume (£14k, 3.7% rate). March has the lowest rate (3.4%) despite the highest sales (£835k). Reduce returns resources in February and redirect to fulfillment capacity in March.
+**Use February and March as preparation periods.** February has the lowest projected volume (£14k, 3.7% rate), while March has the lowest cancellation rate (3.4%) despite the highest sales (£835k). Reduce returns resources in February and shift capacity to fulfillment in March.
 
-**Mandate Customer ID capture at the point of sale.** Anonymous cancellations cannot be managed at the account level. This is a process fix, not a data fix — require login or staff-assisted identification for every transaction.
+**Mandate Customer ID capture at the point of sale.** Anonymous cancellations cannot be managed at the account level. This requires a process change, not a data change. Require login or staff-assisted identification for every transaction.
 
 ### Prediction
 
-**Monitor cluster migration as the leading indicator of future losses.** Cluster membership is the strongest predictor of cancellation risk. Any customer shifting toward Question Mark or Stars behavior — rising frequency paired with rising cancellation loss — should be flagged before losses materialize, not after. Prioritize outreach to Customers 16013, 15311, 17450, and 12748 before January 2012.
+**Monitor cluster migration as a leading indicator of future losses.** Cluster membership is the strongest predictor of cancellation risk. Any customer shifting toward Question Mark or Stars behavior, indicated by rising frequency and increasing cancellation loss, should be flagged before losses occur. Prioritize outreach to Customers 16013, 15311, 17450, and 12748 before January 2012.
 
 ---
 
@@ -161,4 +161,4 @@ Chen, D. (2019). Online Retail II [Data set]. UCI Machine Learning Repository. h
 
 Renato Silva — Data Reporting Analyst
 
-[LinkedIn](#) | [GitHub](#)
+[LinkedIn](https://www.linkedin.com/in/renato-silva-portilla/) | [GitHub](https://github.com/RenatoMateo) | [Retail Part 1](https://github.com/RenatoMateo/online-retail-cancellation-analysis-EDA)
